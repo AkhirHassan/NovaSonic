@@ -10,7 +10,7 @@ COPY tsconfig.json ./
 RUN npm install
 
 # Copy source code
-COPY src/minimal-server.ts ./src/
+COPY src/ ./src/
 COPY public/ ./public/
 
 # Build TypeScript
