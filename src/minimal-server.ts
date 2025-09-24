@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // Serve static files from the public directory
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -22,7 +22,7 @@ app.get('/health', (req, res) => {
 
 // Basic route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+    res.sendFile(path.join(process.cwd(), 'public/index.html'));
 });
 
 // Socket.IO connection handler
