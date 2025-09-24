@@ -1,0 +1,3 @@
+USER: what is the best time to visit japan
+ASSISTANT: The best times to visit Japan are usually in spring, from March to May, and in autumn, from September to November.
+ASSISTANT:  The weather is mild and pleasant during these periods.
