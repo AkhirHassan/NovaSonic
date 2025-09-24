@@ -4,8 +4,8 @@
   "type": "commonjs",
   "main": "dist/minimal-server.js",
   "scripts": {
-    "build": "npx tsc",
-    "start": "node dist/minimal-server.js",
+    "build": "echo 'No build needed'",
+    "start": "npx ts-node src/minimal-server.ts",
     "dev": "npx ts-node src/minimal-server.ts"
   },
   "dependencies": {
