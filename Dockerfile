@@ -17,11 +17,11 @@ COPY public/ ./public/
 RUN npm run build
 
 # Expose port
-EXPOSE 3009
+EXPOSE 8080
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=3009
+ENV PORT=8080
 ENV AWS_REGION=us-east-1
 
 # Start the application

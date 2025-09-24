@@ -9,7 +9,7 @@ run:
   runtime-version: 18
   command: npm start
   network:
-    port: 3009
+    port: 8080
     env: PORT
   env:
     - name: NODE_ENV
@@ -17,4 +17,4 @@ run:
     - name: AWS_REGION
       value: us-east-1
     - name: PORT
-      value: "3009"
+      value: "8080"
