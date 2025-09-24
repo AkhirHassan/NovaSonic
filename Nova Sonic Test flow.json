@@ -1,0 +1,147 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "df70ed5d-4d1c-4a07-a7bd-93b4e826f66e",
+  "Metadata": {
+    "entryPointPosition": {
+      "x": 40,
+      "y": 40
+    },
+    "ActionMetadata": {
+      "df70ed5d-4d1c-4a07-a7bd-93b4e826f66e": {
+        "position": {
+          "x": 263.2,
+          "y": 132
+        }
+      },
+      "2ae5c21a-a113-44c5-9dfa-f43f41dccc84": {
+        "position": {
+          "x": 1091.2,
+          "y": 239.2
+        }
+      },
+      "7958441b-beab-441d-97b1-47108ac21d82": {
+        "position": {
+          "x": 718.4,
+          "y": 350.4
+        }
+      },
+      "4b272d15-eb3f-46ba-bc22-5617df296cf1": {
+        "position": {
+          "x": 534.4,
+          "y": 141.6
+        },
+        "conditionMetadata": []
+      },
+      "27cbd25a-eb62-46a5-b478-64c7c042052d": {
+        "position": {
+          "x": 823.2,
+          "y": 71.2
+        },
+        "parameters": {
+          "LambdaFunctionARN": {
+            "displayName": "nova-sonic-connect"
+          }
+        },
+        "dynamicMetadata": {
+          "customerInput": false
+        }
+      }
+    },
+    "Annotations": [],
+    "name": "Nova Sonic Test",
+    "description": "",
+    "type": "contactFlow",
+    "status": "PUBLISHED",
+    "hash": {}
+  },
+  "Actions": [
+    {
+      "Parameters": {
+        "Text": "Hello! I'm your AI assistant powered by Amazon Nova Sonic. Please tell me how I can help you today?"
+      },
+      "Identifier": "df70ed5d-4d1c-4a07-a7bd-93b4e826f66e",
+      "Type": "MessageParticipant",
+      "Transitions": {
+        "NextAction": "4b272d15-eb3f-46ba-bc22-5617df296cf1",
+        "Errors": [
+          {
+            "NextAction": "4b272d15-eb3f-46ba-bc22-5617df296cf1",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Parameters": {},
+      "Identifier": "2ae5c21a-a113-44c5-9dfa-f43f41dccc84",
+      "Type": "DisconnectParticipant",
+      "Transitions": {}
+    },
+    {
+      "Parameters": {
+        "Text": "$.External.response"
+      },
+      "Identifier": "7958441b-beab-441d-97b1-47108ac21d82",
+      "Type": "MessageParticipant",
+      "Transitions": {
+        "NextAction": "4b272d15-eb3f-46ba-bc22-5617df296cf1",
+        "Errors": [
+          {
+            "NextAction": "2ae5c21a-a113-44c5-9dfa-f43f41dccc84",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Parameters": {
+        "StoreInput": "False",
+        "InputTimeLimitSeconds": "8",
+        "Text": "Please speak your question or request"
+      },
+      "Identifier": "4b272d15-eb3f-46ba-bc22-5617df296cf1",
+      "Type": "GetParticipantInput",
+      "Transitions": {
+        "NextAction": "27cbd25a-eb62-46a5-b478-64c7c042052d",
+        "Errors": [
+          {
+            "NextAction": "2ae5c21a-a113-44c5-9dfa-f43f41dccc84",
+            "ErrorType": "InputTimeLimitExceeded"
+          },
+          {
+            "NextAction": "27cbd25a-eb62-46a5-b478-64c7c042052d",
+            "ErrorType": "NoMatchingCondition"
+          },
+          {
+            "NextAction": "2ae5c21a-a113-44c5-9dfa-f43f41dccc84",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Parameters": {
+        "LambdaFunctionARN": "arn:aws:lambda:ap-southeast-2:207529100869:function:nova-sonic-connect",
+        "InvocationTimeLimitSeconds": "8",
+        "InvocationType": "SYNCHRONOUS",
+        "LambdaInvocationAttributes": {
+          "customerInput": "$.StoredCustomerInput"
+        },
+        "ResponseValidation": {
+          "ResponseType": "STRING_MAP"
+        }
+      },
+      "Identifier": "27cbd25a-eb62-46a5-b478-64c7c042052d",
+      "Type": "InvokeLambdaFunction",
+      "Transitions": {
+        "NextAction": "7958441b-beab-441d-97b1-47108ac21d82",
+        "Errors": [
+          {
+            "NextAction": "2ae5c21a-a113-44c5-9dfa-f43f41dccc84",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    }
+  ]
+}

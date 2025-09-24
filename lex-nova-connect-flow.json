@@ -1,0 +1,48 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "start-message",
+  "Metadata": {
+    "entryPointPosition": { "x": 15, "y": 15 },
+    "ActionMetadata": {
+      "start-message": { "position": { "x": 173, "y": 52 } },
+      "lex-interaction": { "position": { "x": 413, "y": 52 } },
+      "disconnect": { "position": { "x": 653, "y": 52 } }
+    }
+  },
+  "Actions": [
+    {
+      "Identifier": "start-message",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "Hello! I'm your AI assistant powered by Amazon Nova Sonic. Please speak to me."
+      },
+      "Transitions": {
+        "NextAction": "lex-interaction"
+      }
+    },
+    {
+      "Identifier": "lex-interaction",
+      "Type": "ConnectParticipantWithLexBot",
+      "Parameters": {
+        "BotName": "NovaAssistant",
+        "BotAlias": "$LATEST",
+        "BotRegion": "ap-southeast-2",
+        "LexSessionAttributes": {}
+      },
+      "Transitions": {
+        "NextAction": "lex-interaction",
+        "Errors": [
+          {
+            "NextAction": "disconnect",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "disconnect",
+      "Type": "DisconnectParticipant",
+      "Parameters": {}
+    }
+  ]
+}

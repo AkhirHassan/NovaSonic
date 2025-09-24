@@ -1,0 +1,89 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "Metadata": {
+    "entryPointPosition": {
+      "x": 15,
+      "y": 15
+    },
+    "ActionMetadata": {
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890": {
+        "position": {
+          "x": 173,
+          "y": 52
+        }
+      },
+      "b2c3d4e5-f6g7-8901-bcde-f12345678901": {
+        "position": {
+          "x": 413,
+          "y": 52
+        }
+      },
+      "c3d4e5f6-g7h8-9012-cdef-123456789012": {
+        "position": {
+          "x": 653,
+          "y": 52
+        }
+      },
+      "d4e5f6g7-h8i9-0123-def1-234567890123": {
+        "position": {
+          "x": 893,
+          "y": 52
+        }
+      },
+      "e5f6g7h8-i9j0-1234-ef12-345678901234": {
+        "position": {
+          "x": 1133,
+          "y": 52
+        }
+      }
+    }
+  },
+  "Actions": [
+    {
+      "Identifier": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "Hello! I'm your AI assistant powered by Amazon Nova Sonic. Please tell me how I can help you today?"
+      },
+      "Transitions": {
+        "NextAction": "b2c3d4e5-f6g7-8901-bcde-f12345678901"
+      }
+    },
+    {
+      "Identifier": "b2c3d4e5-f6g7-8901-bcde-f12345678901",
+      "Type": "ConnectParticipantWithLexBotV2",
+      "Parameters": {
+        "BotId": "67FX8P53HO",
+        "BotAliasId": "TSTALIASID",
+        "LocaleId": "en_US",
+        "SessionAttributes": {}
+      },
+      "Transitions": {
+        "NextAction": "d4e5f6g7-h8i9-0123-def1-234567890123",
+        "Errors": [
+          {
+            "NextAction": "e5f6g7h8-i9j0-1234-ef12-345678901234",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+
+    {
+      "Identifier": "d4e5f6g7-h8i9-0123-def1-234567890123",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "$.Lex.DialogAction.Message.Content"
+      },
+      "Transitions": {
+        "NextAction": "b2c3d4e5-f6g7-8901-bcde-f12345678901"
+      }
+    },
+    {
+      "Identifier": "e5f6g7h8-i9j0-1234-ef12-345678901234",
+      "Type": "DisconnectParticipant",
+      "Parameters": {}
+    }
+  ]
+}

@@ -2,14 +2,14 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 import { Server } from 'socket.io';
-// import { fromIni, fromInstanceMetadata } from "@aws-sdk/credential-providers";
-import { SimpleNovaSonicClient } from './simple-client';
-// import { ConnectIntegration } from './connect-integration';
+import { fromIni, fromInstanceMetadata } from "@aws-sdk/credential-providers";
+import { NovaSonicBidirectionalStreamClient } from './client';
+import { ConnectIntegration } from './connect-integration';
 import { Buffer } from 'node:buffer';
 
 // Configure AWS credentials
-// const AWS_PROFILE_NAME = process.env.AWS_PROFILE || 'new-account';
-// const isEC2 = process.env.AWS_EXECUTION_ENV || process.env.AWS_REGION;
+const AWS_PROFILE_NAME = process.env.AWS_PROFILE || 'new-account';
+const isEC2 = process.env.AWS_EXECUTION_ENV || process.env.AWS_REGION;
 
 // Create Express app and HTTP server
 const app = express();
@@ -17,7 +17,15 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // Create the AWS Bedrock client
-const bedrockClient = new SimpleNovaSonicClient();
+const bedrockClient = new NovaSonicBidirectionalStreamClient({
+    requestHandlerConfig: {
+        maxConcurrentStreams: 10,
+    },
+    clientConfig: {
+        region: process.env.AWS_REGION || "us-east-1",
+        credentials: isEC2 ? fromInstanceMetadata() : fromIni({ profile: AWS_PROFILE_NAME })
+    }
+});
 
 // Periodically check for and close inactive sessions (every minute)
 // Sessions with no activity for over 5 minutes will be force closed
@@ -239,11 +247,18 @@ app.get('/health', (req, res) => {
 
 // Connect integration endpoint
 app.post('/connect/start', express.json(), async (req, res) => {
-    res.json({ status: 'connect integration disabled' });
+    try {
+        const { participantToken } = req.body;
+        const connectIntegration = new ConnectIntegration();
+        const connectionToken = await connectIntegration.initializeConnection(participantToken);
+        res.json({ connectionToken, status: 'connected' });
+    } catch (error) {
+        res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
 });
 
 // Start the server
-const PORT = process.env.PORT || 3009;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
     console.log(`Open http://localhost:${PORT} in your browser to access the application`);

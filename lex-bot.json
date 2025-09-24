@@ -1,0 +1,88 @@
+{
+  "name": "NovaAssistant",
+  "description": "AI Assistant bot for Amazon Connect integration",
+  "roleArn": "arn:aws:iam::207529100869:role/aws-service-role/lexv2.amazonaws.com/AWSServiceRoleForLexV2Bots_LEXV2ROLE",
+  "dataPrivacy": {
+    "childDirected": false
+  },
+  "idleSessionTTLInSeconds": 300,
+  "botLocales": [
+    {
+      "localeId": "en_US",
+      "description": "English US locale",
+      "nluIntentConfidenceThreshold": 0.40,
+      "voiceSettings": {
+        "voiceId": "Joanna"
+      },
+      "intents": [
+        {
+          "intentName": "CatchAllIntent",
+          "description": "Catches all user input and passes to Lambda",
+          "sampleUtterances": [
+            {
+              "utterance": "help me"
+            },
+            {
+              "utterance": "hello"
+            },
+            {
+              "utterance": "what can you do"
+            },
+            {
+              "utterance": "I need assistance"
+            },
+            {
+              "utterance": "{UserInput}"
+            }
+          ],
+          "slots": [
+            {
+              "slotName": "UserInput",
+              "description": "Captures any user input",
+              "slotTypeName": "AMAZON.AlphaNumeric",
+              "valueElicitationStrategy": {
+                "slotConstraint": "Optional"
+              }
+            }
+          ],
+          "intentConfirmationStrategy": {
+            "promptSpecification": {
+              "messageGroups": [
+                {
+                  "message": {
+                    "plainTextMessage": {
+                      "value": "I understand. Let me help you with that."
+                    }
+                  }
+                }
+              ],
+              "maxRetries": 0
+            }
+          },
+          "fulfillmentCodeHook": {
+            "enabled": false
+          }
+        },
+        {
+          "intentName": "FallbackIntent",
+          "description": "Default fallback intent",
+          "parentIntentSignature": "AMAZON.FallbackIntent",
+          "intentConfirmationStrategy": {
+            "promptSpecification": {
+              "messageGroups": [
+                {
+                  "message": {
+                    "plainTextMessage": {
+                      "value": "I didn't understand that. Can you please repeat?"
+                    }
+                  }
+                }
+              ],
+              "maxRetries": 1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

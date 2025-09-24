@@ -2,9 +2,7 @@
   "name": "nova-speech-app",
   "version": "1.0.0",
   "type": "commonjs",
-  "main": "dist/server.js",
   "scripts": {
-    "build": "echo 'No build needed'",
     "start": "npx ts-node src/server.ts",
     "dev": "npx ts-node src/server.ts"
   },

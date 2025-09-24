@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Simple Nova Sonic Speech App'
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Nova Sonic App Security Group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2Role
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-016ff47edc0224f3c
+      InstanceType: t3.medium
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
+          yum install -y nodejs git
+          npm install -g pm2
+          
+          mkdir -p /home/ec2-user/app
+          cd /home/ec2-user/app
+          
+          # Create the complete application inline
+          cat > package.json << 'EOF'
+          {
+            "name": "nova-speech-app",
+            "version": "1.0.0",
+            "scripts": { "start": "node server.js" },
+            "dependencies": {
+              "@aws-sdk/client-bedrock-runtime": "^3.893.0",
+              "@aws-sdk/credential-providers": "^3.893.0",
+              "@smithy/node-http-handler": "^4.2.1",
+              "express": "^4.21.2",
+              "socket.io": "^4.8.1"
+            }
+          }
+          EOF
+          
+          cat > server.js << 'EOF'
+          const express = require('express');
+          const http = require('http');
+          const { Server } = require('socket.io');
+          const path = require('path');
+          
+          const app = express();
+          const server = http.createServer(app);
+          const io = new Server(server);
+          
+          app.use(express.static(path.join(__dirname, 'public')));
+          
+          app.get('/', (req, res) => {
+            res.send(`
+              <!DOCTYPE html>
+              <html>
+              <head><title>Nova Sonic App</title></head>
+              <body>
+                <h1>Nova Sonic Speech App</h1>
+                <p>App is running on EC2!</p>
+                <p>Instance ID: ${process.env.AWS_EXECUTION_ENV || 'Local'}</p>
+              </body>
+              </html>
+            `);
+          });
+          
+          server.listen(3000, () => {
+            console.log('Server running on port 3000');
+          });
+          EOF
+          
+          npm install
+          chown -R ec2-user:ec2-user /home/ec2-user/app
+          sudo -u ec2-user pm2 start server.js --name nova-app
+          sudo -u ec2-user pm2 startup
+          sudo -u ec2-user pm2 save
+
+Outputs:
+  ApplicationURL:
+    Description: Application URL
+    Value: !Sub 'http://${EC2Instance.PublicIp}:3000'
