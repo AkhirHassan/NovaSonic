@@ -258,7 +258,7 @@ app.post('/connect/start', express.json(), async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3009;
 server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
     console.log(`Open http://localhost:${PORT} in your browser to access the application`);
