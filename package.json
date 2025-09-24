@@ -2,11 +2,11 @@
   "name": "nova-speech-app",
   "version": "1.0.0",
   "type": "commonjs",
-  "main": "dist/minimal-server.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "echo 'No build needed'",
-    "start": "npx ts-node src/minimal-server.ts",
-    "dev": "npx ts-node src/minimal-server.ts"
+    "start": "npx ts-node src/server.ts",
+    "dev": "npx ts-node src/server.ts"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.893.0",

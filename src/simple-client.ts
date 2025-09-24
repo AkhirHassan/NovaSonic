@@ -1,52 +1,29 @@
-import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
 import { fromInstanceMetadata } from "@aws-sdk/credential-providers";
+import { NovaSonicBidirectionalStreamClient, StreamSession } from './client';
 
 export class SimpleNovaSonicClient {
-  private bedrockClient: BedrockRuntimeClient;
-  private activeSessions: Map<string, any> = new Map();
+  private novaSonicClient: NovaSonicBidirectionalStreamClient;
+  private activeSessions: Map<string, StreamSession> = new Map();
+  private sessionLastActivity: Map<string, number> = new Map();
 
   constructor() {
-    this.bedrockClient = new BedrockRuntimeClient({
-      region: "us-east-1",
-      credentials: fromInstanceMetadata()
+    this.novaSonicClient = new NovaSonicBidirectionalStreamClient({
+      clientConfig: {
+        region: "us-east-1",
+        credentials: fromInstanceMetadata()
+      }
     });
   }
 
-  createStreamSession(sessionId: string) {
-    const session = {
-      id: sessionId,
-      onEvent: (eventType: string, handler: Function) => {
-        console.log(`Event handler registered: ${eventType}`);
-      },
-      setupPromptStart: async () => {
-        console.log('Prompt start setup');
-      },
-      setupSystemPrompt: async (config?: any, prompt?: string) => {
-        console.log('System prompt setup:', prompt);
-      },
-      setupStartAudio: async () => {
-        console.log('Audio start setup');
-      },
-      streamAudio: async (audioData: Buffer) => {
-        console.log('Audio streaming:', audioData.length, 'bytes');
-      },
-      endAudioContent: async () => {
-        console.log('End audio content');
-      },
-      endPrompt: async () => {
-        console.log('End prompt');
-      },
-      close: async () => {
-        console.log('Session closed');
-        this.activeSessions.delete(sessionId);
-      }
-    };
-
+  createStreamSession(sessionId: string): StreamSession {
+    const session = this.novaSonicClient.createStreamSession(sessionId);
     this.activeSessions.set(sessionId, session);
+    this.updateSessionActivity(sessionId);
     return session;
   }
 
   initiateSession(sessionId: string) {
+    this.updateSessionActivity(sessionId);
     console.log('Session initiated:', sessionId);
   }
 
@@ -55,20 +32,38 @@ export class SimpleNovaSonicClient {
   }
 
   getLastActivityTime(sessionId: string): number {
-    return Date.now();
+    return this.sessionLastActivity.get(sessionId) || 0;
+  }
+
+  private updateSessionActivity(sessionId: string): void {
+    this.sessionLastActivity.set(sessionId, Date.now());
   }
 
   isSessionActive(sessionId: string): boolean {
     return this.activeSessions.has(sessionId);
   }
 
-  forceCloseSession(sessionId: string) {
-    this.activeSessions.delete(sessionId);
+  async forceCloseSession(sessionId: string) {
+    const session = this.activeSessions.get(sessionId);
+    if (session) {
+      try {
+        await session.close();
+      } catch (error) {
+        console.error('Error force closing session:', error);
+      }
+      this.activeSessions.delete(sessionId);
+      this.sessionLastActivity.delete(sessionId);
+    }
     console.log('Force closed session:', sessionId);
   }
 
-  closeSession(sessionId: string) {
-    this.activeSessions.delete(sessionId);
+  async closeSession(sessionId: string) {
+    const session = this.activeSessions.get(sessionId);
+    if (session) {
+      await session.close();
+      this.activeSessions.delete(sessionId);
+      this.sessionLastActivity.delete(sessionId);
+    }
     console.log('Closed session:', sessionId);
   }
 }
