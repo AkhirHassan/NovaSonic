@@ -1,12 +1,12 @@
 version: 1.0
-runtime: nodejs20
+runtime: nodejs18
 build:
   commands:
     build:
       - npm install
       - npm run build
 run:
-  runtime-version: 20
+  runtime-version: 18
   command: npm start
   network:
     port: 8080
@@ -14,7 +14,5 @@ run:
   env:
     - name: NODE_ENV
       value: production
-    - name: AWS_REGION
-      value: us-east-1
     - name: PORT
       value: "8080"
