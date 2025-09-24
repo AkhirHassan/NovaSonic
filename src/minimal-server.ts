@@ -6,7 +6,14 @@ import { Server } from 'socket.io';
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    },
+    transports: ['polling', 'websocket'],
+    allowEIO3: true
+});
 
 // Serve static files from the public directory
 app.use(express.static(path.join(process.cwd(), 'public')));
@@ -30,6 +37,12 @@ io.on('connection', (socket) => {
     console.log('New client connected:', socket.id);
     
     socket.emit('message', 'Connected to Nova Sonic server');
+    
+    // Test events for debugging
+    socket.on('test', (data) => {
+        console.log('Test event received:', data);
+        socket.emit('testResponse', 'Server received: ' + data);
+    });
     
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
