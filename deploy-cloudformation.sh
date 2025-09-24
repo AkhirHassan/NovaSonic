@@ -2,7 +2,7 @@
 
 # Deploy Nova Sonic App with CloudFormation
 STACK_NAME="novasonic-app-stack"
-GITHUB_REPO_URL="https://github.com/your-username/novasonic-app"  # Update this
+GITHUB_REPO_URL="https://github.com/abdulrahman305/novasonic-app"
 REGION="ap-southeast-2"
 PROFILE="new-account"
 

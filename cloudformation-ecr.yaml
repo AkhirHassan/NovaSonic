@@ -1,23 +1,33 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Nova Sonic App Runner Deployment'
-
-Parameters:
-  GitHubRepoUrl:
-    Type: String
-    Description: GitHub repository URL (e.g., https://github.com/username/repo)
-    Default: https://github.com/abdulrahman305/novasonic-app
-  
-  GitHubBranch:
-    Type: String
-    Description: GitHub branch to deploy
-    Default: main
-  
-  GitHubConnectionArn:
-    Type: String
-    Description: GitHub connection ARN from CodeStar Connections
-    Default: ""
+Description: 'Nova Sonic App Runner Deployment with ECR'
 
 Resources:
+  # ECR Repository
+  NovasonicECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${AWS::StackName}-novasonic'
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 7
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
   # IAM Role for App Runner
   AppRunnerInstanceRole:
     Type: AWS::IAM::Role
@@ -55,15 +65,18 @@ Resources:
     Properties:
       ServiceName: !Sub '${AWS::StackName}-novasonic-app'
       SourceConfiguration:
-        AutoDeploymentsEnabled: true
-        CodeRepository:
-          RepositoryUrl: !Ref GitHubRepoUrl
-          SourceCodeVersion:
-            Type: BRANCH
-            Value: !Ref GitHubBranch
-          CodeConfiguration:
-            ConfigurationSource: REPOSITORY
-          ConnectionArn: !Ref GitHubConnectionArn
+        ImageRepository:
+          ImageIdentifier: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NovasonicECRRepository}:latest'
+          ImageConfiguration:
+            Port: '3009'
+            RuntimeEnvironmentVariables:
+              - Name: NODE_ENV
+                Value: production
+              - Name: AWS_REGION
+                Value: !Ref AWS::Region
+          ImageRepositoryType: ECR
+        AccessRoleArn: !GetAtt AppRunnerAccessRole.Arn
+        AutoDeploymentsEnabled: false
       InstanceConfiguration:
         Cpu: 1 vCPU
         Memory: 2 GB
@@ -78,18 +91,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-novasonic-app'
-        - Key: Environment
-          Value: Production
 
 Outputs:
+  ECRRepositoryURI:
+    Description: ECR Repository URI
+    Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NovasonicECRRepository}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ECRRepositoryURI'
+  
   AppRunnerServiceUrl:
     Description: App Runner Service URL
     Value: !Sub 'https://${NovasonicAppRunnerService.ServiceUrl}'
     Export:
       Name: !Sub '${AWS::StackName}-ServiceUrl'
-  
-  AppRunnerServiceArn:
-    Description: App Runner Service ARN
-    Value: !Ref NovasonicAppRunnerService
-    Export:
-      Name: !Sub '${AWS::StackName}-ServiceArn'
